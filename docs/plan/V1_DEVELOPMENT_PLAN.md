@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft for approval and GitHub issue publication. This plan covers the private ten-person pilot defined by the authoritative product documents. GitHub Issues is the task system; after publication, this document will contain links to the corresponding phase epics, user stories, and tasks.
+Approved and published to GitHub Issues. This plan covers the private ten-person pilot defined by the authoritative product documents. GitHub Issues is the implementation task system; `docs/plan/V1_ISSUE_CATALOG.md` maps every stable planning ID to its published issue.
 
 ## Outcome
 
@@ -220,7 +220,19 @@ Phase 4 and most of Phase 5 may proceed in parallel after Phase 3 contracts are 
 - **Bug:** reserved for defects discovered during implementation or pilot validation; labeled `bug` and linked to the affected story/epic.
 - Dependencies are expressed in each body as `Blocked by`. Sub-issue linkage expresses ownership, not execution order.
 
-The exact issue bodies and hierarchy are in `docs/plan/V1_ISSUE_CATALOG.md`. After publication, symbolic IDs in both files will be augmented with GitHub issue links.
+The exact issue bodies, links, and hierarchy are in `docs/plan/V1_ISSUE_CATALOG.md`.
+
+## GitHub tracker index
+
+| Phase | Epic |
+|---|---|
+| P0 — Architecture risk gate | [#2](https://github.com/theanadimukt/nextcue/issues/2) |
+| P1 — Domain and local-first foundation | [#12](https://github.com/theanadimukt/nextcue/issues/12) |
+| P2 — Instant capture | [#22](https://github.com/theanadimukt/nextcue/issues/22) |
+| P3 — Cues, reminders, and Due focus | [#32](https://github.com/theanadimukt/nextcue/issues/32) |
+| P4 — Delayed triage | [#42](https://github.com/theanadimukt/nextcue/issues/42) |
+| P5 — Outcomes and data ownership | [#52](https://github.com/theanadimukt/nextcue/issues/52) |
+| P6 — Pilot evidence, hardening, and release | [#62](https://github.com/theanadimukt/nextcue/issues/62) |
 
 ## Risks and mitigations
 
@@ -262,6 +274,6 @@ The exact issue bodies and hierarchy are in `docs/plan/V1_ISSUE_CATALOG.md`. Aft
 - [x] Every leaf task in the issue catalog has acceptance and verification evidence.
 - [x] Phase checkpoints prevent cross-platform or privacy work from being inferred complete.
 - [x] Deferred AI and other explicit exclusions do not appear in implementation scope.
-- [ ] User approves issue granularity, dependencies, and HITL gates.
-- [ ] GitHub labels and epic → story → task hierarchy are published.
-- [ ] GitHub issue links replace symbolic-only tracker references.
+- [x] User approves issue granularity, dependencies, and HITL gates.
+- [x] GitHub labels and epic → story → task hierarchy are published.
+- [x] GitHub issue links replace symbolic-only tracker references.

@@ -2,11 +2,13 @@
 
 ## How to use this catalog
 
-This catalog is the publication source for GitHub Issues. Create issues in dependency order, label phase epics and user stories `feature`, label leaf work `task`, and attach each child using GitHub sub-issues. Keep the repository label `bug` available for defects discovered later. Symbolic IDs are stable planning identifiers; append GitHub issue links after publication.
+This catalog is published to GitHub Issues. Phase epics and user stories use `feature`, leaf work uses `task`, and each child is attached using native GitHub sub-issues. The repository label `bug` remains available for defects discovered later. Symbolic IDs are stable planning identifiers linked to their published issues below.
 
 Each story is a thin, demonstrable slice. `AFK` means it can be implemented after its blockers without a product decision. `HITL` means a named human review or decision is required to close it.
 
 ## P0 — Prove the cross-platform capture architecture
+
+**GitHub:** [#2](https://github.com/theanadimukt/nextcue/issues/2)
 
 **Type:** Epic / HITL
 **Label:** `feature`
@@ -21,6 +23,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P0-US1 — Prove durable iOS share capture
 
+**GitHub:** [#3](https://github.com/theanadimukt/nextcue/issues/3)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** None
@@ -33,6 +37,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Repeated delivery is idempotent and invalid input creates no Capture.
 
 #### P0-T1 — Build the minimal iOS extension harness
+
+**GitHub:** [#4](https://github.com/theanadimukt/nextcue/issues/4)
 
 **Label:** `task`
 **Blocked by:** None
@@ -48,6 +54,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P0-T2 — Prove durable import and failure isolation on iOS
 
+**GitHub:** [#5](https://github.com/theanadimukt/nextcue/issues/5)
+
 **Label:** `task`
 **Blocked by:** P0-T1
 **What to build:** A durable handoff queue and minimal import path that acknowledges only persisted work, imports after cold start, and keeps capture independent from optional operations.
@@ -62,6 +70,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P0-US2 — Prove durable Android share capture
 
+**GitHub:** [#6](https://github.com/theanadimukt/nextcue/issues/6)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P0-US1 (normalized contract learned on iOS)
@@ -74,6 +84,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] The produced normalized input matches the source-neutral contract used by iOS.
 
 #### P0-T3 — Build the minimal Android share-target harness
+
+**GitHub:** [#7](https://github.com/theanadimukt/nextcue/issues/7)
 
 **Label:** `task`
 **Blocked by:** P0-US1
@@ -89,6 +101,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P0-T4 — Prove Android lifecycle and duplicate resilience
 
+**GitHub:** [#8](https://github.com/theanadimukt/nextcue/issues/8)
+
 **Label:** `task`
 **Blocked by:** P0-T3
 **What to build:** The smallest durable delivery mechanism needed to replay/import pending shares safely after lifecycle interruption.
@@ -103,6 +117,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P0-US3 — Decide and bootstrap the production client architecture
 
+**GitHub:** [#9](https://github.com/theanadimukt/nextcue/issues/9)
+
 **Type:** User story / HITL
 **Label:** `feature`
 **Blocked by:** P0-US1, P0-US2
@@ -115,6 +131,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] The approved project scaffold builds/tests on both platforms before feature work starts.
 
 #### P0-T5 — Run the framework decision review
+
+**GitHub:** [#10](https://github.com/theanadimukt/nextcue/issues/10)
 
 **Label:** `task`
 **Blocked by:** P0-T2, P0-T4
@@ -130,6 +148,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P0-T6 — Bootstrap production quality gates
 
+**GitHub:** [#11](https://github.com/theanadimukt/nextcue/issues/11)
+
 **Label:** `task`
 **Blocked by:** P0-T5
 **What to build:** The approved client scaffold with formatting, lint/static analysis, unit/widget test commands, debug/release builds, secret exclusions, and CI-ready scripts.
@@ -144,6 +164,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ## P1 — Establish the local-first domain foundation
 
+**GitHub:** [#12](https://github.com/theanadimukt/nextcue/issues/12)
+
 **Type:** Epic / AFK
 **Label:** `feature`
 **Blocked by:** P0
@@ -157,6 +179,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P1-US1 — Persist Captures and enforce lifecycle invariants
 
+**GitHub:** [#13](https://github.com/theanadimukt/nextcue/issues/13)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P0-US3
@@ -169,6 +193,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Due and Stale are derived from a controllable clock rather than stored statuses.
 
 #### P1-T1 — Implement the local schema and repository contract
+
+**GitHub:** [#14](https://github.com/theanadimukt/nextcue/issues/14)
 
 **Label:** `task`
 **Blocked by:** P0-T6
@@ -184,6 +210,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P1-T2 — Implement and test the lifecycle transition service
 
+**GitHub:** [#15](https://github.com/theanadimukt/nextcue/issues/15)
+
 **Label:** `task`
 **Blocked by:** P1-T1
 **What to build:** Shared domain commands/policies for Add cue, Use later, Skip, Archive/Not useful, Restore, Applied, Reschedule, and Delete.
@@ -198,6 +226,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P1-US2 — Recognize supported Reel URLs and handle duplicates
 
+**GitHub:** [#16](https://github.com/theanadimukt/nextcue/issues/16)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P1-US1
@@ -210,6 +240,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Active duplicates reopen; Archived duplicates restore to Unassigned; invalid input creates no record.
 
 #### P1-T3 — Implement defensive URL extraction and canonicalization
+
+**GitHub:** [#17](https://github.com/theanadimukt/nextcue/issues/17)
 
 **Label:** `task`
 **Blocked by:** P1-T1
@@ -225,6 +257,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P1-T4 — Implement idempotent capture and duplicate recovery policy
 
+**GitHub:** [#18](https://github.com/theanadimukt/nextcue/issues/18)
+
 **Label:** `task`
 **Blocked by:** P1-T2, P1-T3
 **What to build:** One repository/domain operation that creates a unique Capture or returns/restores the existing Capture according to status.
@@ -239,6 +273,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P1-US3 — Navigate an accessible, clock-driven app shell
 
+**GitHub:** [#19](https://github.com/theanadimukt/nextcue/issues/19)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P1-US1
@@ -251,6 +287,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Critical shell controls support screen readers, dynamic text, reduced motion, contrast, and touch targets.
 
 #### P1-T5 — Build the app shell and empty/loading/error states
+
+**GitHub:** [#20](https://github.com/theanadimukt/nextcue/issues/20)
 
 **Label:** `task`
 **Blocked by:** P0-T6, P1-T1
@@ -266,6 +304,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P1-T6 — Add deterministic clock, query, and accessibility test harnesses
 
+**GitHub:** [#21](https://github.com/theanadimukt/nextcue/issues/21)
+
 **Label:** `task`
 **Blocked by:** P1-T2, P1-T5
 **What to build:** Test utilities for clock/timezone control, seeded repositories, lifecycle fixtures, semantic labels, and repeatable view snapshots/assertions.
@@ -280,6 +320,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ## P2 — Deliver durable instant capture
 
+**GitHub:** [#22](https://github.com/theanadimukt/nextcue/issues/22)
+
 **Type:** Epic / AFK
 **Label:** `feature`
 **Blocked by:** P1
@@ -293,6 +335,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P2-US1 — Capture a Reel from the iOS Share Extension
 
+**GitHub:** [#23](https://github.com/theanadimukt/nextcue/issues/23)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P1-US2
@@ -305,6 +349,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Invalid input explains failure and directs the user to paste fallback without creating a record.
 
 #### P2-T1 — Productionize the iOS native adapter and durable queue
+
+**GitHub:** [#24](https://github.com/theanadimukt/nextcue/issues/24)
 
 **Label:** `task`
 **Blocked by:** P0-T2, P1-T4
@@ -320,6 +366,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P2-T2 — Build the iOS Saved/Add cue and invalid-input surfaces
 
+**GitHub:** [#25](https://github.com/theanadimukt/nextcue/issues/25)
+
 **Label:** `task`
 **Blocked by:** P2-T1
 **What to build:** Minimal extension confirmation and error UI that asks no required questions after a valid save.
@@ -334,6 +382,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P2-US2 — Capture a Reel from Android sharing
 
+**GitHub:** [#26](https://github.com/theanadimukt/nextcue/issues/26)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P1-US2
@@ -346,6 +396,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Invalid input creates no record and explains paste fallback.
 
 #### P2-T3 — Productionize the Android adapter and replay path
+
+**GitHub:** [#27](https://github.com/theanadimukt/nextcue/issues/27)
 
 **Label:** `task`
 **Blocked by:** P0-T4, P1-T4
@@ -361,6 +413,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P2-T4 — Build Android capture confirmation and invalid-input recovery
 
+**GitHub:** [#28](https://github.com/theanadimukt/nextcue/issues/28)
+
 **Label:** `task`
 **Blocked by:** P2-T3
 **What to build:** Fast confirmation/error presentation appropriate to Android lifecycle entry, with optional Add cue and paste-fallback guidance.
@@ -375,6 +429,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P2-US3 — Capture by paste and survive duplicate or unavailable content
 
+**GitHub:** [#29](https://github.com/theanadimukt/nextcue/issues/29)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P1-US2, P1-US3
@@ -387,6 +443,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Optional metadata failure leaves a fallback card with Open, replace URL, Archive, and Delete.
 
 #### P2-T5 — Build the in-app paste fallback and duplicate routing
+
+**GitHub:** [#30](https://github.com/theanadimukt/nextcue/issues/30)
 
 **Label:** `task`
 **Blocked by:** P1-T4, P1-T5
@@ -402,6 +460,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P2-T6 — Add failure-tolerant metadata and fallback cards
 
+**GitHub:** [#31](https://github.com/theanadimukt/nextcue/issues/31)
+
 **Label:** `task`
 **Blocked by:** P2-T5
 **What to build:** Optional post-persistence public metadata enrichment with strict safety limits plus a URL-first fallback card and replace-URL flow.
@@ -416,6 +476,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ## P3 — Schedule Cues and focus Due work
 
+**GitHub:** [#32](https://github.com/theanadimukt/nextcue/issues/32)
+
 **Type:** Epic / AFK
 **Label:** `feature`
 **Blocked by:** P2
@@ -429,6 +491,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P3-US1 — Add or replace a Cue with optional Purpose
 
+**GitHub:** [#33](https://github.com/theanadimukt/nextcue/issues/33)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P2
@@ -441,6 +505,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Closing/cancelling optional entry never rolls back the existing Capture.
 
 #### P3-T1 — Define reminder time and timezone semantics
+
+**GitHub:** [#34](https://github.com/theanadimukt/nextcue/issues/34)
 
 **Label:** `task`
 **Blocked by:** P1-T6
@@ -456,6 +522,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P3-T2 — Build Add cue and atomic Cue replacement
 
+**GitHub:** [#35](https://github.com/theanadimukt/nextcue/issues/35)
+
 **Label:** `task`
 **Blocked by:** P3-T1, P1-T2
 **What to build:** Shared command plus accessible UI for optional Purpose and required reminder time, used after capture and from existing Capture detail.
@@ -470,6 +538,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P3-US2 — Receive private, controllable local reminders
 
+**GitHub:** [#36](https://github.com/theanadimukt/nextcue/issues/36)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P3-US1
@@ -482,6 +552,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Scheduled-reminder control, quiet hours, denial, and delivery failure never delete or unschedule the Cue.
 
 #### P3-T3 — Implement the local notification scheduling port
+
+**GitHub:** [#37](https://github.com/theanadimukt/nextcue/issues/37)
 
 **Label:** `task`
 **Blocked by:** P3-T2
@@ -497,6 +569,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P3-T4 — Implement privacy preview, quiet hours, and reminder controls
 
+**GitHub:** [#38](https://github.com/theanadimukt/nextcue/issues/38)
+
 **Label:** `task`
 **Blocked by:** P3-T1, P3-T3
 **What to build:** Settings and scheduling policy for purpose preview opt-in, weekend time, quiet hours, and scheduled-reminder enable/disable independent from triage.
@@ -511,6 +585,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P3-US3 — Focus Today without hiding overdue work
 
+**GitHub:** [#39](https://github.com/theanadimukt/nextcue/issues/39)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P3-US1
@@ -523,6 +599,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Notification taps open the intended Capture or a safe Due fallback.
 
 #### P3-T5 — Build Today and View all queries and screens
+
+**GitHub:** [#40](https://github.com/theanadimukt/nextcue/issues/40)
 
 **Label:** `task`
 **Blocked by:** P3-T2, P1-T6
@@ -538,6 +616,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P3-T6 — Route reminder taps and preserve return context
 
+**GitHub:** [#41](https://github.com/theanadimukt/nextcue/issues/41)
+
 **Label:** `task`
 **Blocked by:** P3-T3, P3-T5
 **What to build:** Robust notification deep-link routing for cold/warm app entry, missing/deleted targets, and Cue replacement.
@@ -552,6 +632,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ## P4 — Guide delayed triage
 
+**GitHub:** [#42](https://github.com/theanadimukt/nextcue/issues/42)
+
 **Type:** Epic / AFK
 **Label:** `feature`
 **Blocked by:** P3
@@ -565,6 +647,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P4-US1 — Enable daily triage in context
 
+**GitHub:** [#43](https://github.com/theanadimukt/nextcue/issues/43)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P2, P3-US2
@@ -577,6 +661,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Declining or disabling triage leaves full capture, Cue, and in-app triage functionality.
 
 #### P4-T1 — Build first-Unassigned triage education and settings
+
+**GitHub:** [#44](https://github.com/theanadimukt/nextcue/issues/44)
 
 **Label:** `task`
 **Blocked by:** P2, P1-T5
@@ -592,6 +678,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P4-T2 — Schedule and suppress the daily triage cue
 
+**GitHub:** [#45](https://github.com/theanadimukt/nextcue/issues/45)
+
 **Label:** `task`
 **Blocked by:** P4-T1, P3-T3
 **What to build:** A local daily triage scheduler that requests permission contextually, avoids content previews, and suppresses days containing Due work.
@@ -606,6 +694,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P4-US2 — Triage up to three eligible Captures
 
+**GitHub:** [#46](https://github.com/theanadimukt/nextcue/issues/46)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P4-US1, P3-US1
@@ -618,6 +708,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] A session ends after three decisions and never traps access to remaining Captures elsewhere.
 
 #### P4-T3 — Implement triage eligibility and session policy
+
+**GitHub:** [#47](https://github.com/theanadimukt/nextcue/issues/47)
 
 **Label:** `task`
 **Blocked by:** P1-T2, P1-T6
@@ -633,6 +725,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P4-T4 — Build the one-item triage decision flow
 
+**GitHub:** [#48](https://github.com/theanadimukt/nextcue/issues/48)
+
 **Label:** `task`
 **Blocked by:** P4-T3, P3-T2
 **What to build:** Accessible one-Capture presentation with Use later, Not useful, Skip for now, and optional continue/finish behavior.
@@ -647,6 +741,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P4-US3 — Review Stale Captures transparently
 
+**GitHub:** [#49](https://github.com/theanadimukt/nextcue/issues/49)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P4-US2
@@ -659,6 +755,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] The user can Add cue, Archive, open, or delete from the Stale path.
 
 #### P4-T5 — Implement Stale derivation and boundary-safe queries
+
+**GitHub:** [#50](https://github.com/theanadimukt/nextcue/issues/50)
 
 **Label:** `task`
 **Blocked by:** P1-T6, P4-T3
@@ -674,6 +772,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P4-T6 — Build the Stale view and actions
 
+**GitHub:** [#51](https://github.com/theanadimukt/nextcue/issues/51)
+
 **Label:** `task`
 **Blocked by:** P4-T5, P3-T2
 **What to build:** Accessible Stale list/detail behavior using existing Open, Add cue, Archive, and Delete actions.
@@ -688,6 +788,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ## P5 — Record outcomes and guarantee data ownership
 
+**GitHub:** [#52](https://github.com/theanadimukt/nextcue/issues/52)
+
 **Type:** Epic / AFK
 **Label:** `feature`
 **Blocked by:** P3; integrates with P4 navigation
@@ -701,6 +803,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P5-US1 — Open a Reel and request an explicit outcome
 
+**GitHub:** [#53](https://github.com/theanadimukt/nextcue/issues/53)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P3-US3, P2-US3
@@ -713,6 +817,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Dismissal, app kill, or launch failure does not change lifecycle state.
 
 #### P5-T1 — Implement safe external opening and return context
+
+**GitHub:** [#54](https://github.com/theanadimukt/nextcue/issues/54)
 
 **Label:** `task`
 **Blocked by:** P2-T6, P3-T6
@@ -728,6 +834,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P5-T2 — Build the explicit outcome prompt
 
+**GitHub:** [#55](https://github.com/theanadimukt/nextcue/issues/55)
+
 **Label:** `task`
 **Blocked by:** P5-T1
 **What to build:** Accessible return prompt/detail state with Applied, Reschedule, Archive, and dismiss-later behavior.
@@ -742,6 +850,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P5-US2 — Apply, reschedule, or archive a Due Capture
 
+**GitHub:** [#56](https://github.com/theanadimukt/nextcue/issues/56)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P5-US1, P3-US1
@@ -754,6 +864,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Archive cancels active notification and remains distinct from Applied.
 
 #### P5-T3 — Implement Applied and optional private note
+
+**GitHub:** [#57](https://github.com/theanadimukt/nextcue/issues/57)
 
 **Label:** `task`
 **Blocked by:** P5-T2, P3-T3
@@ -769,6 +881,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P5-T4 — Complete Reschedule and Archive outcomes
 
+**GitHub:** [#58](https://github.com/theanadimukt/nextcue/issues/58)
+
 **Label:** `task`
 **Blocked by:** P5-T2, P3-T2, P3-T3
 **What to build:** Outcome wiring that reuses atomic Cue replacement and reversible Archive, with idempotent notification effects.
@@ -783,6 +897,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P5-US3 — Restore, delete, or erase local data
 
+**GitHub:** [#59](https://github.com/theanadimukt/nextcue/issues/59)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P5-US2, P4-US3
@@ -795,6 +911,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Delete all local data clears product/analytics identifiers and notifications as defined, then returns to a safe onboarding state.
 
 #### P5-T5 — Build Archived view, Restore, and individual Delete
+
+**GitHub:** [#60](https://github.com/theanadimukt/nextcue/issues/60)
 
 **Label:** `task`
 **Blocked by:** P5-T4, P2-T6
@@ -810,6 +928,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P5-T6 — Build Settings data disclosure and Delete all local data
 
+**GitHub:** [#61](https://github.com/theanadimukt/nextcue/issues/61)
+
 **Label:** `task`
 **Blocked by:** P5-T5, P4-T1
 **What to build:** Settings disclosure that uninstall loses pilot data plus a strongly confirmed total local erasure operation and notification cleanup.
@@ -824,6 +944,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ## P6 — Instrument, harden, and run the private pilot
 
+**GitHub:** [#62](https://github.com/theanadimukt/nextcue/issues/62)
+
 **Type:** Epic / HITL
 **Label:** `feature`
 **Blocked by:** P2-P5
@@ -837,6 +959,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P6-US1 — Onboard a private-pilot participant
 
+**GitHub:** [#63](https://github.com/theanadimukt/nextcue/issues/63)
+
 **Type:** User story / AFK
 **Label:** `feature`
 **Blocked by:** P1-US3; may proceed alongside P3-P5
@@ -849,6 +973,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Declining analytics preserves every product capability.
 
 #### P6-T1 — Build local participant-code onboarding
+
+**GitHub:** [#64](https://github.com/theanadimukt/nextcue/issues/64)
 
 **Label:** `task`
 **Blocked by:** P1-T5
@@ -864,6 +990,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P6-T2 — Implement separate analytics consent and revocation
 
+**GitHub:** [#65](https://github.com/theanadimukt/nextcue/issues/65)
+
 **Label:** `task`
 **Blocked by:** P6-T1
 **What to build:** A separate, plain-language consent decision and Settings control that can revoke collection without disabling features.
@@ -878,6 +1006,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P6-US2 — Collect only consented, content-free lifecycle evidence
 
+**GitHub:** [#66](https://github.com/theanadimukt/nextcue/issues/66)
+
 **Type:** User story / HITL
 **Label:** `feature`
 **Blocked by:** P6-US1 and product event points from P2-P5
@@ -890,6 +1020,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Consent off/revoked emits nothing and cannot reduce functionality.
 
 #### P6-T3 — Approve provider, event schema, and privacy configuration
+
+**GitHub:** [#67](https://github.com/theanadimukt/nextcue/issues/67)
 
 **Label:** `task`
 **Blocked by:** P6-T2
@@ -905,6 +1037,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P6-T4 — Integrate the analytics allow-list and privacy tests
 
+**GitHub:** [#68](https://github.com/theanadimukt/nextcue/issues/68)
+
 **Label:** `task`
 **Blocked by:** P6-T3
 **What to build:** A narrow analytics port/provider adapter that accepts typed allow-listed events, queues appropriately, respects consent, and cannot accept arbitrary properties.
@@ -919,6 +1053,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ### P6-US3 — Release and operate a trustworthy ten-person pilot
 
+**GitHub:** [#69](https://github.com/theanadimukt/nextcue/issues/69)
+
 **Type:** User story / HITL
 **Label:** `feature`
 **Blocked by:** P2-P5, P6-US2
@@ -931,6 +1067,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 - [ ] Operator runbook maps weekly interviews and approved events to the 6-of-10 continuation threshold.
 
 #### P6-T5 — Run the release hardening and accessibility matrix
+
+**GitHub:** [#70](https://github.com/theanadimukt/nextcue/issues/70)
 
 **Label:** `task`
 **Blocked by:** All product stories, P6-T4
@@ -946,6 +1084,8 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 #### P6-T6 — Prepare controlled distribution and pilot operations
 
+**GitHub:** [#71](https://github.com/theanadimukt/nextcue/issues/71)
+
 **Label:** `task`
 **Blocked by:** P6-T5
 **What to build:** TestFlight/Google Play closed-test release steps and an operator runbook for roster separation, invitations, participant code handling, weekly interviews, support, incident response, build rollback, and final evaluation.
@@ -960,11 +1100,11 @@ Each story is a thin, demonstrable slice. `AFK` means it can be implemented afte
 
 ## Publication checklist
 
-- [ ] Confirm the granularity, dependency links, and HITL/AFK classification with the owner.
-- [ ] Ensure labels `feature`, `task`, and `bug` exist with distinct descriptions/colors.
-- [ ] Create epics P0-P6 in order.
-- [ ] Create each user story and attach it as a sub-issue of its phase epic.
-- [ ] Create each task and attach it as a sub-issue of its user story.
-- [ ] Replace symbolic blockers in GitHub bodies with actual issue links/numbers.
-- [ ] Add resulting links beside symbolic IDs in this catalog and the roadmap plan.
-- [ ] Verify every parent shows the expected child count and no issue is orphaned.
+- [x] Confirm the granularity, dependency links, and HITL/AFK classification with the owner.
+- [x] Ensure labels `feature`, `task`, and `bug` exist with distinct descriptions/colors.
+- [x] Create epics P0-P6 in order.
+- [x] Create each user story and attach it as a sub-issue of its phase epic.
+- [x] Create each task and attach it as a sub-issue of its user story.
+- [x] Replace symbolic blockers in GitHub bodies with actual issue links/numbers.
+- [x] Add resulting links beside symbolic IDs in this catalog and the roadmap plan.
+- [x] Verify every parent shows the expected child count and no issue is orphaned.
