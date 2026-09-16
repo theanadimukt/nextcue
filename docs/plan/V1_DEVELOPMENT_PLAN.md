@@ -215,8 +215,8 @@ Phase 4 and most of Phase 5 may proceed in parallel after Phase 3 contracts are 
 ## GitHub issue model
 
 - **Phase epic:** one issue per phase, labeled `feature`; contains the phase outcome, entry/exit gates, and child user stories.
-- **User story:** one sub-issue per user-visible or enabling outcome, labeled `feature`; contains end-to-end acceptance criteria, dependencies, and child tasks.
-- **Task:** one leaf sub-issue per focused implementation session, labeled `task`; contains concrete acceptance criteria and verification evidence.
+- **User story:** one sub-issue per user-visible or enabling outcome, labeled `feature`; contains a short plain-language explanation, end-to-end acceptance criteria, dependencies, and child tasks.
+- **Task:** one leaf sub-issue per focused implementation session, labeled `task`; contains an AI-executable brief with objective, implementation guidance, constraints/non-goals, task-specific Definition of Done, concrete acceptance criteria, and verification evidence.
 - **Bug:** reserved for defects discovered during implementation or pilot validation; labeled `bug` and linked to the affected story/epic.
 - Dependencies are expressed in each body as `Blocked by`. Sub-issue linkage expresses ownership, not execution order.
 

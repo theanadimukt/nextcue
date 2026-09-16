@@ -120,7 +120,9 @@ If the spike fails, compare Flutter with bare React Native using actual spike ev
 - User stories use the `feature` label and are attached as sub-issues of their phase epic.
 - Focused implementation tasks use the `task` label and are attached as sub-issues of their user story.
 - Defects use the `bug` label and link to the affected story or epic.
-- Every implementation issue must state what to build, testable acceptance criteria, verification evidence, and blockers.
+- Every user story must include a short, plain-language explanation of the behavior and user value without duplicating implementation detail.
+- Every implementation task must be usable as a standalone AI development brief: state the objective, implementation guidance, constraints/non-goals, task-specific Definition of Done, unchanged testable acceptance criteria, verification evidence, and blockers.
+- A task's Definition of Done must require every acceptance criterion and verification step to pass, relevant automated/build checks to be green, and applicable platform, accessibility, or privacy evidence to be attached to the issue or pull request.
 - Parent/child linkage expresses scope ownership; `Blocked by` expresses execution order.
 - Do not close a parent until all child acceptance criteria and its phase checkpoint pass.
 
