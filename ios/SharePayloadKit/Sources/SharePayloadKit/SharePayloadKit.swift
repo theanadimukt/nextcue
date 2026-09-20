@@ -1,5 +1,5 @@
-import Foundation
 import CryptoKit
+import Foundation
 
 public enum SharedCaptureSourceHint: String, Codable, Equatable, Sendable {
   case text
@@ -137,8 +137,9 @@ public struct HandoffQueue: Sendable {
   }
 
   public func acknowledge(_ entry: QueuedHandoff) throws {
-    guard entry.fileURL.deletingLastPathComponent().standardizedFileURL
-      .resolvingSymlinksInPath() == directoryURL.resolvingSymlinksInPath(),
+    guard
+      entry.fileURL.deletingLastPathComponent().standardizedFileURL
+        .resolvingSymlinksInPath() == directoryURL.resolvingSymlinksInPath(),
       entry.fileURL.lastPathComponent == Self.fileName(for: entry.envelope.handoffID)
     else { throw DurableImportError.invalidQueueEntry }
     try FileManager.default.removeItem(at: entry.fileURL)
@@ -213,7 +214,7 @@ public struct SpikeCaptureRepository: Sendable {
     do {
       try FileManager.default.moveItem(at: temporary, to: destination)
       return SpikeCaptureSaveResult(capture: capture, inserted: true)
-    } catch where FileManager.default.fileExists(atPath: destination.path) {
+    } catch  where FileManager.default.fileExists(atPath: destination.path) {
       return SpikeCaptureSaveResult(capture: try loadCapture(at: destination), inserted: false)
     }
   }
