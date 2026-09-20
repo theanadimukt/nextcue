@@ -19,7 +19,7 @@ The host application supplies untrusted `NSExtensionItem` and `NSItemProvider` v
 The extension writes only this allow-listed structural evidence to App Group `UserDefaults`:
 
 - schema version;
-- accepted/rejected result;
+- supported/unsupported representation result;
 - source representation (`text`, `url`, or `unsupported`);
 - character count;
 - HTTP(S) URL count;
@@ -28,6 +28,16 @@ The extension writes only this allow-listed structural evidence to App Group `Us
 - receipt timestamp.
 
 It never writes or logs shared text, full URLs, URL paths, query strings, credentials, or device identifiers. Runner reads this evidence through a narrow Flutter method channel and displays it in the disposable harness.
+
+`representationSupported: true` means the host supplied bounded plain text or an HTTP(S) URL. It does not mean the URL is an Instagram Reel and does not create a Capture. Reel recognition and durable import remain outside issue #4.
+
+## Limitations for issue #5
+
+- The extension and Runner are separate processes and cannot communicate directly. Runner must import from the App Group after launch or resume; the extension must never depend on opening Runner.
+- `UserDefaults` readback proves this harness can write sanitized evidence. It is not the atomic, idempotent, crash-recoverable queue required for durable Capture import.
+- Host applications can expose the same share as URL, plain text, attributed text, or multiple providers. Durable import must test real Instagram versions and continue across rejected representations.
+- App Group access depends on registered identifiers, matching entitlements, and valid profiles for both targets. A compile-only or simulator build does not prove device access.
+- Extension lifetime and memory are constrained. Durable import must finish its local handoff before completing the request and defer Flutter startup, network work, metadata, and optional UI.
 
 ## Automated verification
 
@@ -43,7 +53,7 @@ flutter build ios --simulator
 flutter build ios --release --no-codesign
 ```
 
-The Swift tests cover accepted URL and text shapes, unsupported schemes and representations, text bounds, missing URLs, and content minimization. `check_ios_harness.sh` verifies matching iOS 15 deployment targets, matching App Group entitlements, extension-safe API enforcement, and extension embedding.
+The Swift tests cover supported URL and text shapes, unsupported schemes and representations, text bounds, missing URLs, later valid representations, rejection evidence preservation, and content minimization. `check_ios_harness.sh` verifies matching iOS 15 deployment targets, matching App Group entitlements, extension-safe API enforcement, and extension embedding.
 
 On 20 September 2026, formatting, Flutter analysis, Flutter widget tests, Swift tests, configuration/property-list validation, direct Runner and Share Extension type-checking against the iPhoneOS 27.0 SDK, a Flutter iOS simulator build, and an unsigned release-device build passed. Both built Runner bundles contained `PlugIns/ShareExtension.appex`; Runner and extension reported an iOS 15.0 minimum deployment target, and the extension contained the expected share-services activation rule. No simulator runtime interaction or physical-device acceptance evidence has been recorded.
 

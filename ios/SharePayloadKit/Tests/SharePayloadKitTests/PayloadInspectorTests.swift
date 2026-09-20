@@ -3,13 +3,13 @@ import XCTest
 @testable import SharePayloadKit
 
 final class PayloadInspectorTests: XCTestCase {
-  func testHTTPURLProducesContentFreeAcceptedEvidence() {
+  func testHTTPURLProducesContentFreeSupportedRepresentationEvidence() {
     let evidence = PayloadInspector.inspect(
       url: URL(string: "https://www.instagram.com/reel/example/?utm_source=share")!,
       receivedAt: Date(timeIntervalSince1970: 1_700_000_000)
     )
 
-    XCTAssertTrue(evidence.accepted)
+    XCTAssertTrue(evidence.representationSupported)
     XCTAssertEqual(evidence.sourceType, .url)
     XCTAssertEqual(evidence.urlCount, 1)
     XCTAssertEqual(evidence.hostCategory, .instagram)
@@ -22,7 +22,7 @@ final class PayloadInspectorTests: XCTestCase {
       receivedAt: Date(timeIntervalSince1970: 1_700_000_000)
     )
 
-    XCTAssertTrue(evidence.accepted)
+    XCTAssertTrue(evidence.representationSupported)
     XCTAssertEqual(evidence.sourceType, .text)
     XCTAssertEqual(evidence.urlCount, 2)
     XCTAssertEqual(evidence.hostCategory, .instagram)
@@ -37,7 +37,7 @@ final class PayloadInspectorTests: XCTestCase {
       receivedAt: Date(timeIntervalSince1970: 1_700_000_000)
     )
 
-    XCTAssertFalse(evidence.accepted)
+    XCTAssertFalse(evidence.representationSupported)
     XCTAssertEqual(evidence.rejectionReason, .unsupportedScheme)
     XCTAssertEqual(evidence.urlCount, 0)
   }
@@ -48,7 +48,7 @@ final class PayloadInspectorTests: XCTestCase {
       receivedAt: Date(timeIntervalSince1970: 1_700_000_000)
     )
 
-    XCTAssertFalse(evidence.accepted)
+    XCTAssertFalse(evidence.representationSupported)
     XCTAssertEqual(evidence.rejectionReason, .textTooLarge)
     XCTAssertEqual(evidence.characterCount, PayloadInspector.maximumTextLength + 1)
     XCTAssertEqual(evidence.urlCount, 0)
@@ -60,7 +60,7 @@ final class PayloadInspectorTests: XCTestCase {
       receivedAt: Date(timeIntervalSince1970: 1_700_000_000)
     )
 
-    XCTAssertFalse(evidence.accepted)
+    XCTAssertFalse(evidence.representationSupported)
     XCTAssertEqual(evidence.rejectionReason, .noHTTPURL)
   }
 
@@ -69,10 +69,25 @@ final class PayloadInspectorTests: XCTestCase {
       receivedAt: Date(timeIntervalSince1970: 1_700_000_000)
     )
 
-    XCTAssertFalse(evidence.accepted)
+    XCTAssertFalse(evidence.representationSupported)
     XCTAssertEqual(evidence.sourceType, .unsupported)
     XCTAssertEqual(evidence.rejectionReason, .unsupportedType)
     XCTAssertEqual(evidence.characterCount, 0)
     XCTAssertEqual(evidence.urlCount, 0)
+  }
+
+  func testSelectionPrefersAValidLaterRepresentation() {
+    let rejected = PayloadInspector.inspect(text: "not a URL")
+    let supported = PayloadInspector.inspect(
+      url: URL(string: "https://instagram.com/reel/example")!)
+
+    XCTAssertEqual(EvidenceSelector.select([rejected, supported]), supported)
+  }
+
+  func testSelectionPreservesFirstSpecificRejectionWhenNoneAreSupported() {
+    let rejectedText = PayloadInspector.inspect(text: "not a URL")
+    let unsupported = PayloadInspector.unsupported()
+
+    XCTAssertEqual(EvidenceSelector.select([rejectedText, unsupported]), rejectedText)
   }
 }

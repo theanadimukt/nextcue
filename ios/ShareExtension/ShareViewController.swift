@@ -8,7 +8,7 @@ final class ShareViewController: UIViewController {
 
   private let statusLabel = UILabel()
   private let doneButton = UIButton(type: .system)
-  private var requestAccepted = false
+  private var canCompleteRequest = false
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -52,19 +52,25 @@ final class ShareViewController: UIViewController {
       return
     }
 
+    var candidates: [ShareEvidence] = []
     if let text = item.attributedContentText?.string, !text.isEmpty {
       let evidence = PayloadInspector.inspect(text: text)
-      if evidence.accepted {
+      if evidence.representationSupported {
         finishInspection(with: evidence)
         return
       }
+      candidates.append(evidence)
     }
-    inspect(providers: item.attachments ?? [], at: 0)
+    inspect(providers: item.attachments ?? [], at: 0, candidates: candidates)
   }
 
-  private func inspect(providers: [NSItemProvider], at index: Int) {
+  private func inspect(
+    providers: [NSItemProvider],
+    at index: Int,
+    candidates: [ShareEvidence]
+  ) {
     guard index < providers.count else {
-      finishInspection(with: PayloadInspector.unsupported())
+      finishInspection(with: EvidenceSelector.select(candidates))
       return
     }
 
@@ -75,48 +81,88 @@ final class ShareViewController: UIViewController {
         let url = value as? URL ?? (value as? NSURL).map { $0 as URL }
         DispatchQueue.main.async {
           if let url {
-            self.finishInspection(with: PayloadInspector.inspect(url: url))
+            let evidence = PayloadInspector.inspect(url: url)
+            if evidence.representationSupported {
+              self.finishInspection(with: evidence)
+            } else {
+              self.inspectText(
+                from: provider,
+                providers: providers,
+                at: index,
+                candidates: candidates + [evidence]
+              )
+            }
           } else {
-            self.inspect(providers: providers, at: index + 1)
+            self.inspectText(
+              from: provider,
+              providers: providers,
+              at: index,
+              candidates: candidates
+            )
           }
         }
       }
       return
     }
 
+    inspectText(from: provider, providers: providers, at: index, candidates: candidates)
+  }
+
+  private func inspectText(
+    from provider: NSItemProvider,
+    providers: [NSItemProvider],
+    at index: Int,
+    candidates: [ShareEvidence]
+  ) {
     if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) {
       provider.loadItem(forTypeIdentifier: UTType.plainText.identifier) { [weak self] value, _ in
         guard let self else { return }
         let text = value as? String ?? (value as? NSString).map(String.init)
         DispatchQueue.main.async {
           if let text {
-            self.finishInspection(with: PayloadInspector.inspect(text: text))
+            let evidence = PayloadInspector.inspect(text: text)
+            if evidence.representationSupported {
+              self.finishInspection(with: evidence)
+            } else {
+              self.inspect(
+                providers: providers,
+                at: index + 1,
+                candidates: candidates + [evidence]
+              )
+            }
           } else {
-            self.inspect(providers: providers, at: index + 1)
+            self.inspect(providers: providers, at: index + 1, candidates: candidates)
           }
         }
       }
       return
     }
 
-    inspect(providers: providers, at: index + 1)
+    inspect(providers: providers, at: index + 1, candidates: candidates)
   }
 
   private func finishInspection(with evidence: ShareEvidence) {
-    requestAccepted = evidence.accepted
-    UserDefaults(suiteName: Self.appGroupIdentifier)?.set(
-      evidence.propertyList,
-      forKey: Self.evidenceKey
-    )
+    guard let defaults = UserDefaults(suiteName: Self.appGroupIdentifier) else {
+      statusLabel.text = "Unable to access the shared App Group. No evidence was recorded."
+      doneButton.isEnabled = true
+      return
+    }
+    defaults.set(evidence.propertyList, forKey: Self.evidenceKey)
+    guard defaults.dictionary(forKey: Self.evidenceKey) != nil else {
+      statusLabel.text = "Unable to record sanitized evidence."
+      doneButton.isEnabled = true
+      return
+    }
+    canCompleteRequest = evidence.representationSupported
     statusLabel.text =
-      evidence.accepted
-      ? "Supported share received. Only structural evidence was recorded."
+      evidence.representationSupported
+      ? "Supported text or URL representation received. Only structural evidence was recorded."
       : "Unsupported share. No shared content was recorded."
     doneButton.isEnabled = true
   }
 
   @objc private func finish() {
-    if requestAccepted {
+    if canCompleteRequest {
       extensionContext?.completeRequest(returningItems: nil)
     } else {
       extensionContext?.cancelRequest(

@@ -20,7 +20,7 @@ public enum ShareRejectionReason: String, Equatable, Sendable {
 }
 
 public struct ShareEvidence: Equatable, Sendable {
-  public let accepted: Bool
+  public let representationSupported: Bool
   public let sourceType: ShareSourceType
   public let characterCount: Int
   public let urlCount: Int
@@ -31,7 +31,7 @@ public struct ShareEvidence: Equatable, Sendable {
   public var propertyList: [String: Any] {
     var value: [String: Any] = [
       "schemaVersion": 1,
-      "accepted": accepted,
+      "representationSupported": representationSupported,
       "sourceType": sourceType.rawValue,
       "characterCount": characterCount,
       "urlCount": urlCount,
@@ -45,7 +45,7 @@ public struct ShareEvidence: Equatable, Sendable {
   }
 
   public static func == (lhs: ShareEvidence, rhs: ShareEvidence) -> Bool {
-    lhs.accepted == rhs.accepted
+    lhs.representationSupported == rhs.representationSupported
       && lhs.sourceType == rhs.sourceType
       && lhs.characterCount == rhs.characterCount
       && lhs.urlCount == rhs.urlCount
@@ -60,7 +60,7 @@ public enum PayloadInspector {
 
   public static func unsupported(receivedAt: Date = Date()) -> ShareEvidence {
     ShareEvidence(
-      accepted: false,
+      representationSupported: false,
       sourceType: .unsupported,
       characterCount: 0,
       urlCount: 0,
@@ -73,7 +73,7 @@ public enum PayloadInspector {
   public static func inspect(url: URL, receivedAt: Date = Date()) -> ShareEvidence {
     guard isHTTP(url), url.host != nil else {
       return ShareEvidence(
-        accepted: false,
+        representationSupported: false,
         sourceType: .url,
         characterCount: url.absoluteString.count,
         urlCount: 0,
@@ -84,7 +84,7 @@ public enum PayloadInspector {
     }
 
     return ShareEvidence(
-      accepted: true,
+      representationSupported: true,
       sourceType: .url,
       characterCount: url.absoluteString.count,
       urlCount: 1,
@@ -97,7 +97,7 @@ public enum PayloadInspector {
   public static func inspect(text: String, receivedAt: Date = Date()) -> ShareEvidence {
     guard text.count <= maximumTextLength else {
       return ShareEvidence(
-        accepted: false,
+        representationSupported: false,
         sourceType: .text,
         characterCount: text.count,
         urlCount: 0,
@@ -110,7 +110,7 @@ public enum PayloadInspector {
     let urls = detectedHTTPURLs(in: text)
     guard !urls.isEmpty else {
       return ShareEvidence(
-        accepted: false,
+        representationSupported: false,
         sourceType: .text,
         characterCount: text.count,
         urlCount: 0,
@@ -125,7 +125,7 @@ public enum PayloadInspector {
       ? .instagram
       : .other
     return ShareEvidence(
-      accepted: true,
+      representationSupported: true,
       sourceType: .text,
       characterCount: text.count,
       urlCount: urls.count,
@@ -150,5 +150,13 @@ public enum PayloadInspector {
   private static func hostCategory(for url: URL) -> ShareHostCategory {
     guard let host = url.host?.lowercased() else { return .none }
     return host == "instagram.com" || host.hasSuffix(".instagram.com") ? .instagram : .other
+  }
+}
+
+public enum EvidenceSelector {
+  public static func select(_ candidates: [ShareEvidence]) -> ShareEvidence {
+    candidates.first(where: \.representationSupported)
+      ?? candidates.first
+      ?? PayloadInspector.unsupported()
   }
 }
