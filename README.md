@@ -1,17 +1,16 @@
-# nextcue
+# NextCue
 
-A new Flutter project.
+Disposable Flutter iOS Share Extension harness for ADR-003.
 
-## Getting Started
+## Code style
 
-This project is a starting point for a Flutter application.
+Use platform-native tools; no extra formatter dependency is required.
 
-A few resources to get you started if this is your first Flutter project:
+```sh
+make format # Dart formatter and Swift formatter
+make lint   # Dart format check, Flutter analyzer, and strict Swift format check
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+`dart format` is Flutter's canonical Prettier equivalent. `flutter analyze`
+uses `flutter_lints` through `analysis_options.yaml`. Xcode's Swift toolchain
+provides `swift format` and `swift format lint`.

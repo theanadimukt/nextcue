@@ -24,8 +24,7 @@ A disposable Flutter iOS scaffold now supports the [ADR-003 share-capture spike]
 Run provisional Phase 0 commands from the repository root:
 
 ```sh
-dart format --output=none --set-exit-if-changed .
-flutter analyze
+make lint
 flutter test
 (cd ios/SharePayloadKit && swift test)
 tool/check_ios_harness.sh
