@@ -24,32 +24,51 @@ class EvidencePage extends StatefulWidget {
 
 class _EvidencePageState extends State<EvidencePage> {
   static const _channel = MethodChannel('app.nextcue/share-evidence');
-  Map<String, Object?>? _evidence;
+  static const _visibleKeys = <String>[
+    'status',
+    'pendingCount',
+    'captureCount',
+    'importedCount',
+    'duplicateCount',
+    'rejectedCount',
+    'queueFailureCount',
+    'repositoryFailureCount',
+    'acknowledgementFailureCount',
+    'optionalFailureCount',
+  ];
+  Map<String, Object?>? _status;
+  bool _loading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadEvidence();
+    _loadStatus('getImportStatus');
   }
 
-  Future<void> _loadEvidence() async {
-    Map<String, Object?>? evidence;
+  Future<void> _loadStatus(String method) async {
+    if (mounted) setState(() => _loading = true);
+    Map<String, Object?>? status;
     try {
-      evidence = await _channel.invokeMapMethod<String, Object?>(
-        'getLastShareEvidence',
-      );
+      status = await _channel.invokeMapMethod<String, Object?>(method);
     } on PlatformException {
-      evidence = null;
+      status = null;
     } on MissingPluginException {
-      evidence = null;
+      status = null;
     }
-    if (mounted) setState(() => _evidence = evidence);
+    if (mounted) {
+      setState(() {
+        _status = status;
+        _loading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final entries = _evidence?.entries.toList();
-    entries?.sort((a, b) => a.key.compareTo(b.key));
+    final visibleStatus = _visibleKeys
+        .where((key) => _status?.containsKey(key) ?? false)
+        .map((key) => '$key: ${_status?[key]}')
+        .join('\n');
     return Scaffold(
       appBar: AppBar(title: const Text('NextCue share harness')),
       body: Padding(
@@ -58,21 +77,26 @@ class _EvidencePageState extends State<EvidencePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Sanitized share evidence',
+              'Durable import status',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             SelectableText(
-              entries == null || entries.isEmpty
-                  ? 'No share evidence recorded.'
-                  : entries
-                        .map((entry) => '${entry.key}: ${entry.value}')
-                        .join('\n'),
+              visibleStatus.isEmpty
+                  ? 'Import status unavailable.'
+                  : visibleStatus,
             ),
             const Spacer(),
             FilledButton(
-              onPressed: _loadEvidence,
-              child: const Text('Refresh evidence'),
+              onPressed: _loading ? null : () => _loadStatus('retryImport'),
+              child: const Text('Retry import'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: _loading
+                  ? null
+                  : () => _loadStatus('simulateOptionalFailure'),
+              child: const Text('Simulate optional failure'),
             ),
           ],
         ),

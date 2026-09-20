@@ -12,6 +12,7 @@
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		444F9E59EEB2B0721A684191 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D38DD1665D900788B482E3A /* ShareViewController.swift */; };
 		4FFCA121AE13D0E04AA5F0DD /* SharePayloadKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900AEB1F20AC83E436B67A57 /* SharePayloadKit.swift */; };
+		5AA21A8D31F0D813002E2A05 /* SharePayloadKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900AEB1F20AC83E436B67A57 /* SharePayloadKit.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
@@ -382,6 +383,7 @@
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
+				5AA21A8D31F0D813002E2A05 /* SharePayloadKit.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
