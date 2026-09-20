@@ -148,6 +148,7 @@ final class DurableImportTests: XCTestCase {
 
     XCTAssertEqual(summary.rejectedCount, 2)
     XCTAssertEqual(summary.pendingCount, 2)
+    XCTAssertEqual(summary.status, "invalid_pending")
     XCTAssertEqual(try repository.allCaptures(), [])
     XCTAssertFalse(summary.propertyList.description.contains("instagram.com"))
     XCTAssertFalse(summary.propertyList.description.contains(root.path))
