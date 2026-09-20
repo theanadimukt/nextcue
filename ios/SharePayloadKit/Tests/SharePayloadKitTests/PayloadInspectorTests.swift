@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import SharePayloadKit
 
 final class PayloadInspectorTests: XCTestCase {
@@ -61,5 +62,17 @@ final class PayloadInspectorTests: XCTestCase {
 
     XCTAssertFalse(evidence.accepted)
     XCTAssertEqual(evidence.rejectionReason, .noHTTPURL)
+  }
+
+  func testUnsupportedRepresentationProducesContentFreeEvidence() {
+    let evidence = PayloadInspector.unsupported(
+      receivedAt: Date(timeIntervalSince1970: 1_700_000_000)
+    )
+
+    XCTAssertFalse(evidence.accepted)
+    XCTAssertEqual(evidence.sourceType, .unsupported)
+    XCTAssertEqual(evidence.rejectionReason, .unsupportedType)
+    XCTAssertEqual(evidence.characterCount, 0)
+    XCTAssertEqual(evidence.urlCount, 0)
   }
 }

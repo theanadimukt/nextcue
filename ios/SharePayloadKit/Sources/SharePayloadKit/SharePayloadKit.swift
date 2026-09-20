@@ -2,6 +2,7 @@ import Foundation
 
 public enum ShareSourceType: String, Equatable, Sendable {
   case text
+  case unsupported
   case url
 }
 
@@ -15,6 +16,7 @@ public enum ShareRejectionReason: String, Equatable, Sendable {
   case noHTTPURL = "no_http_url"
   case textTooLarge = "text_too_large"
   case unsupportedScheme = "unsupported_scheme"
+  case unsupportedType = "unsupported_type"
 }
 
 public struct ShareEvidence: Equatable, Sendable {
@@ -55,6 +57,18 @@ public struct ShareEvidence: Equatable, Sendable {
 
 public enum PayloadInspector {
   public static let maximumTextLength = 4_096
+
+  public static func unsupported(receivedAt: Date = Date()) -> ShareEvidence {
+    ShareEvidence(
+      accepted: false,
+      sourceType: .unsupported,
+      characterCount: 0,
+      urlCount: 0,
+      hostCategory: .none,
+      rejectionReason: .unsupportedType,
+      receivedAt: receivedAt
+    )
+  }
 
   public static func inspect(url: URL, receivedAt: Date = Date()) -> ShareEvidence {
     guard isHTTP(url), url.host != nil else {
@@ -106,7 +120,8 @@ public enum PayloadInspector {
       )
     }
 
-    let category: ShareHostCategory = urls.contains { hostCategory(for: $0) == .instagram }
+    let category: ShareHostCategory =
+      urls.contains { hostCategory(for: $0) == .instagram }
       ? .instagram
       : .other
     return ShareEvidence(
