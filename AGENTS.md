@@ -21,7 +21,7 @@ If authoritative documents conflict, stop and reconcile the documentation. Do no
 
 ## Current repository state
 
-- Product requirements and ADRs exist; application code has not yet been created.
+- A disposable Flutter iOS spike scaffold exists for P0-T1; it is not a production application scaffold.
 - Flutter is provisional, not final.
 - The first implementation work must be the ADR-003 cross-platform share-capture spike.
 - Do not begin production screen development until the spike passes on physical iOS and Android devices and the framework decision is recorded.
@@ -158,4 +158,17 @@ A change is complete only when:
 
 ## Project commands
 
-No application scaffold exists yet, so there are currently no approved build, test, lint, or run commands. Add the canonical commands here immediately after the Phase 0 architecture decision and production scaffold are committed.
+Run these commands from the repository root for the provisional Phase 0 spike:
+
+```sh
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+(cd ios/SharePayloadKit && swift test)
+tool/check_ios_harness.sh
+flutter build ios --simulator
+flutter build ios --release --no-codesign
+flutter run --release
+```
+
+The final command requires a signed physical-device configuration. These commands remain provisional until Phase 0 records the framework decision and establishes the production scaffold.
