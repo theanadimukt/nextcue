@@ -1,5 +1,160 @@
 import Foundation
 
+public enum SharedCaptureSourceHint: String, Codable, Equatable, Sendable {
+  case text
+  case url
+}
+
+public enum DurableImportError: Error {
+  case invalidEnvelope
+  case invalidQueueEntry
+}
+
+public struct SharedCaptureEnvelope: Codable, Equatable, Sendable {
+  public static let currentSchemaVersion = 1
+  public static let maximumCandidateURLCount = 4
+  public static let maximumURLLength = 4_096
+
+  public let schemaVersion: Int
+  public let handoffID: UUID
+  public let receivedAt: Date
+  public let sourceHint: SharedCaptureSourceHint
+  public let rawText: String?
+  public let candidateURLs: [String]
+
+  public init(
+    schemaVersion: Int = currentSchemaVersion,
+    handoffID: UUID = UUID(),
+    receivedAt: Date,
+    sourceHint: SharedCaptureSourceHint,
+    rawText: String?,
+    candidateURLs: [String]
+  ) throws {
+    self.schemaVersion = schemaVersion
+    self.handoffID = handoffID
+    self.receivedAt = receivedAt
+    self.sourceHint = sourceHint
+    self.rawText = rawText
+    self.candidateURLs = candidateURLs
+    try validate()
+  }
+
+  public func validate() throws {
+    guard schemaVersion == Self.currentSchemaVersion,
+      (1...Self.maximumCandidateURLCount).contains(candidateURLs.count),
+      rawText?.count ?? 0 <= PayloadInspector.maximumTextLength,
+      (sourceHint == .text) == (rawText != nil),
+      candidateURLs.allSatisfy({ candidate in
+        guard candidate.count <= Self.maximumURLLength, let url = URL(string: candidate),
+          let scheme = url.scheme?.lowercased()
+        else { return false }
+        return (scheme == "http" || scheme == "https") && url.host != nil
+      })
+    else { throw DurableImportError.invalidEnvelope }
+  }
+}
+
+public struct QueuedHandoff: Equatable, Sendable {
+  public let envelope: SharedCaptureEnvelope
+  fileprivate let fileURL: URL
+}
+
+public struct HandoffQueueScan: Equatable, Sendable {
+  public let entries: [QueuedHandoff]
+  public let rejectedCount: Int
+  public let totalPendingCount: Int
+}
+
+public struct HandoffQueue: Sendable {
+  public static let maximumEnvelopeBytes = 32 * 1_024
+  public static let maximumEntriesPerScan = 100
+
+  private let directoryURL: URL
+
+  public init(directoryURL: URL) {
+    self.directoryURL = directoryURL.standardizedFileURL
+  }
+
+  public func enqueue(_ envelope: SharedCaptureEnvelope) throws {
+    try envelope.validate()
+    let data = try Self.encoder.encode(envelope)
+    guard data.count <= Self.maximumEnvelopeBytes else {
+      throw DurableImportError.invalidEnvelope
+    }
+    try FileManager.default.createDirectory(
+      at: directoryURL,
+      withIntermediateDirectories: true
+    )
+    let destination = directoryURL.appendingPathComponent(Self.fileName(for: envelope.handoffID))
+    let temporary = directoryURL.appendingPathComponent(".\(UUID().uuidString).tmp")
+    defer { try? FileManager.default.removeItem(at: temporary) }
+    try data.write(to: temporary, options: .withoutOverwriting)
+    try FileManager.default.moveItem(at: temporary, to: destination)
+  }
+
+  public func pendingEntries() throws -> [QueuedHandoff] {
+    try scan().entries
+  }
+
+  public func scan() throws -> HandoffQueueScan {
+    guard FileManager.default.fileExists(atPath: directoryURL.path) else {
+      return HandoffQueueScan(entries: [], rejectedCount: 0, totalPendingCount: 0)
+    }
+    let files = try FileManager.default.contentsOfDirectory(
+      at: directoryURL,
+      includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey, .isSymbolicLinkKey]
+    ).filter { $0.pathExtension == "json" }.sorted { $0.lastPathComponent < $1.lastPathComponent }
+
+    var entries: [QueuedHandoff] = []
+    var rejectedCount = 0
+    for fileURL in files.prefix(Self.maximumEntriesPerScan) {
+      do {
+        let values = try fileURL.resourceValues(
+          forKeys: [.fileSizeKey, .isRegularFileKey, .isSymbolicLinkKey]
+        )
+        guard values.isRegularFile == true, values.isSymbolicLink != true,
+          let size = values.fileSize, size <= Self.maximumEnvelopeBytes
+        else { throw DurableImportError.invalidQueueEntry }
+        let envelope = try Self.decoder.decode(
+          SharedCaptureEnvelope.self,
+          from: Data(contentsOf: fileURL, options: .mappedIfSafe)
+        )
+        try envelope.validate()
+        guard fileURL.lastPathComponent == Self.fileName(for: envelope.handoffID) else {
+          throw DurableImportError.invalidQueueEntry
+        }
+        entries.append(QueuedHandoff(envelope: envelope, fileURL: fileURL))
+      } catch {
+        rejectedCount += 1
+      }
+    }
+    return HandoffQueueScan(
+      entries: entries,
+      rejectedCount: rejectedCount,
+      totalPendingCount: files.count
+    )
+  }
+
+  public func acknowledge(_ entry: QueuedHandoff) throws {
+    guard entry.fileURL.deletingLastPathComponent().standardizedFileURL == directoryURL,
+      entry.fileURL.lastPathComponent == Self.fileName(for: entry.envelope.handoffID)
+    else { throw DurableImportError.invalidQueueEntry }
+    try FileManager.default.removeItem(at: entry.fileURL)
+  }
+
+  private static let encoder: JSONEncoder = {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    return encoder
+  }()
+
+  private static let decoder = JSONDecoder()
+
+  private static func fileName(for handoffID: UUID) -> String {
+    "\(handoffID.uuidString).json"
+  }
+}
+
 public enum ShareSourceType: String, Equatable, Sendable {
   case text
   case unsupported
