@@ -90,4 +90,21 @@ final class PayloadInspectorTests: XCTestCase {
 
     XCTAssertEqual(EvidenceSelector.select([rejectedText, unsupported]), rejectedText)
   }
+
+  func testCandidateExtractionKeepsOnlyFirstFourHTTPURLs() {
+    let urls = PayloadInspector.candidateHTTPURLs(
+      in: "https://a.example/1 file:///private/a https://b.example/2 "
+        + "https://c.example/3 https://d.example/4 https://e.example/5"
+    )
+
+    XCTAssertEqual(
+      urls.map(\.absoluteString),
+      [
+        "https://a.example/1",
+        "https://b.example/2",
+        "https://c.example/3",
+        "https://d.example/4",
+      ]
+    )
+  }
 }

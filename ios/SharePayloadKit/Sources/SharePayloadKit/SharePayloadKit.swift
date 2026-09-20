@@ -485,7 +485,7 @@ public enum PayloadInspector {
       )
     }
 
-    let urls = detectedHTTPURLs(in: text)
+    let urls = candidateHTTPURLs(in: text)
     guard !urls.isEmpty else {
       return ShareEvidence(
         representationSupported: false,
@@ -513,11 +513,14 @@ public enum PayloadInspector {
     )
   }
 
-  private static func detectedHTTPURLs(in text: String) -> [URL] {
+  public static func candidateHTTPURLs(in text: String) -> [URL] {
     guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
     else { return [] }
     let range = NSRange(text.startIndex..<text.endIndex, in: text)
-    return detector.matches(in: text, range: range).compactMap(\.url).filter(isHTTP)
+    return Array(
+      detector.matches(in: text, range: range).compactMap(\.url).filter(isHTTP)
+        .prefix(SharedCaptureEnvelope.maximumCandidateURLCount)
+    )
   }
 
   private static func isHTTP(_ url: URL) -> Bool {
