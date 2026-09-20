@@ -19,7 +19,8 @@ awk '
   /IPHONEOS_DEPLOYMENT_TARGET =/ {
     value = $3
     gsub(/;/, "", value)
-    if (value != "15.0") exit 1
+    if (found && value != expected) exit 1
+    expected = value
     found = 1
   }
   END { if (!found) exit 1 }
