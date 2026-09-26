@@ -1,0 +1,148 @@
+name: CI
+
+# Automated evidence for every push and pull request. Jobs in this workflow run on
+# GitHub-hosted runners so implementation is never blocked on the founder's hardware.
+#
+# Evidence classes (see docs/decisions/0004-code-first-with-batched-device-evidence.md):
+#   A - automated, runs anywhere (Linux runner)
+#   B - automated, needs an Apple toolchain (macOS runner)
+# Classes C (simulator), D (physical device), and E (accessibility) are manual and are
+# batched into device sessions recorded in docs/verification/DEFERRED_EVIDENCE.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.47.5
+
+jobs:
+  # Decides which expensive jobs are worth their runner minutes. Job-level hashFiles() is not
+  # usable for this: no job has a workspace before checkout.
+  changed:
+    name: Detect changed areas
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      apple: ${{ steps.detect.outputs.apple }}
+      android: ${{ steps.detect.outputs.android }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: detect
+        name: Detect changes that need an Apple toolchain or Android tooling
+        run: |
+          set -eu
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            files=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          else
+            files=$(git diff --name-only HEAD~1...HEAD || git ls-files)
+          fi
+          printf '%s\n' "$files"
+          if printf '%s\n' "$files" | grep -Eq '^(ios/|lib/|test/|pubspec|analysis_options|tool/)'; then
+            echo "apple=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "apple=false" >> "$GITHUB_OUTPUT"
+          fi
+          if printf '%s\n' "$files" | grep -Eq '^android/'; then
+            echo "android=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "android=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  automated:
+    name: Automated checks (Dart, Flutter, iOS configuration)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Dart formatting
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Static analysis
+        run: flutter analyze
+      - name: Dart and widget tests
+        run: flutter test
+      - name: iOS harness configuration
+        run: python3 tool/check_ios_harness.py
+
+  # Needs an Android project first; until then the gate is skipped rather than failed.
+  android:
+    name: Android debug build
+    needs: changed
+    if: ${{ needs.changed.outputs.android == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+  # Replaces the local "does it still compile for iOS" evidence that previously needed the
+  # founder's Mac. Device rows stay manual; see docs/verification/DEFERRED_EVIDENCE.md.
+  apple:
+    name: Apple toolchain (Swift tests and unsigned iOS build)
+    needs: changed
+    # Runs for iOS-affecting changes, or on demand from the Actions tab so the expensive
+    # class B evidence can be produced before a release or a device session.
+    if: ${{ needs.changed.outputs.apple == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Swift package tests
+        run: swift test
+        working-directory: ios/SharePayloadKit
+      - name: Swift formatting
+        run: |
+          if swift format --version >/dev/null 2>&1; then
+            swift format lint --strict --recursive --parallel ios/Runner ios/RunnerTests ios/ShareExtension ios/SharePayloadKit/Package.swift ios/SharePayloadKit/Sources ios/SharePayloadKit/Tests
+          else
+            echo "swift format is unavailable on this runner; formatting is unchecked."
+          fi
+      - name: iOS harness configuration
+        run: python3 tool/check_ios_harness.py
+      - name: Unsigned iOS release build
+        run: flutter build ios --release --no-codesign
+      - name: Confirm the Share Extension is embedded
+        run: |
+          set -eu
+          app=$(find build/ios/iphoneos -maxdepth 1 -name '*.app' | head -1)
+          test -n "$app"
+          test -d "$app/PlugIns/ShareExtension.appex"
+          echo "Embedded extension verified in $app"
