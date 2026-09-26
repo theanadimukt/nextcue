@@ -1,32 +1,13 @@
 #!/bin/sh
+# Compatibility wrapper. The check itself lives in check_ios_harness.py so the same evidence
+# can be produced on Linux, in CI, and on macOS without plutil or PlistBuddy.
 set -eu
 
-project=ios/Runner.xcodeproj/project.pbxproj
-runner_entitlements=ios/Runner/Runner.entitlements
-extension_entitlements=ios/ShareExtension/ShareExtension.entitlements
-expected_group=group.app.nextcue.share-spike
+directory=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
-plutil -lint "$runner_entitlements" "$extension_entitlements" ios/ShareExtension/Info.plist >/dev/null
+if command -v python3 >/dev/null 2>&1; then
+  exec python3 "$directory/check_ios_harness.py"
+fi
 
-runner_group=$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.application-groups:0' "$runner_entitlements")
-extension_group=$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.application-groups:0' "$extension_entitlements")
-[ "$runner_group" = "$expected_group" ]
-[ "$extension_group" = "$expected_group" ]
-
-awk '
-  /IPHONEOS_DEPLOYMENT_TARGET =/ {
-    value = $3
-    gsub(/;/, "", value)
-    if (value != "15.0") exit 1
-    found = 1
-  }
-  END { if (!found) exit 1 }
-' "$project"
-
-awk '
-  /APPLICATION_EXTENSION_API_ONLY = YES;/ { safe = 1 }
-  /Embed Foundation Extensions/ { embedded = 1 }
-  END { if (!safe || !embedded) exit 1 }
-' "$project"
-
-printf '%s\n' 'iOS harness configuration checks passed.'
+printf '%s\n' 'python3 is required to run the iOS harness configuration check.' >&2
+exit 1
