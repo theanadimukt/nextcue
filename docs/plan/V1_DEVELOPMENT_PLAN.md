@@ -179,7 +179,13 @@ Phase 4 and most of Phase 5 may proceed in parallel after Phase 3 contracts are 
 
 ## Verification strategy
 
-### Automated evidence
+Evidence classes and the implementation-versus-verification split are defined in [ADR-004](../decisions/0004-code-first-with-batched-device-evidence.md).
+
+- **Class A — automated, runs anywhere:** `make check` (Dart formatting, `flutter analyze`, Dart and widget tests, cross-platform iOS configuration checks). Runs on Linux, in a container, and in CI.
+- **Class B — automated, Apple toolchain:** `make check-apple` (Swift package tests, unsigned iOS release build, extension embedding). Runs on macOS and on the macOS CI runner.
+- **Class C — simulator, D — physical device, E — accessibility:** manual, batched at phase gates through [DEVICE_SESSION.md](../verification/DEVICE_SESSION.md), with every deferral registered in [DEFERRED_EVIDENCE.md](../verification/DEFERRED_EVIDENCE.md).
+
+### Automated evidence (classes A and B)
 
 - Domain unit tests cover every transition and invariant in `GLOSSARY.md`.
 - Property/table tests cover URL extraction, canonicalization, duplicate delivery, and unsupported input.
@@ -188,13 +194,16 @@ Phase 4 and most of Phase 5 may proceed in parallel after Phase 3 contracts are 
 - Widget/integration tests cover the capture confirmation, add-cue, triage, Today/View all, outcome, Archive, Settings, and destructive confirmations.
 - Analytics contract tests reject URLs, metadata, Purpose, notes, arbitrary properties, and events without consent.
 
-### Platform evidence
+Device-independent logic must stay behind ports and outside Flutter widgets so these tests can run without a simulator or a device. Uncovered behavior is a signal to move logic into the domain layer, not to add a manual step.
+
+### Platform evidence (classes C and D)
 
 - iOS release build on physical devices: share extension cold start, app terminated/background/foreground, duplicate platform delivery, extension timeout/failure, notification denial, notification tap, and return from Instagram/browser.
 - Android release build on physical devices: cold/warm share, activity recreation, duplicate intents, process death, notification denial/tap, and return from Instagram/browser.
 - Evidence is platform-specific. Passing one platform never closes the other platform's task.
+- Collected in one batched session per gate, not one session per task.
 
-### Accessibility evidence
+### Accessibility evidence (class E)
 
 - VoiceOver and TalkBack labels/order for every critical flow.
 - Dynamic text at the supported maximum without hidden decisions.
@@ -203,14 +212,25 @@ Phase 4 and most of Phase 5 may proceed in parallel after Phase 3 contracts are 
 
 ## Definition of Done for every leaf task
 
-- Acceptance criteria and focused automated tests pass.
-- Relevant lint, formatting, static analysis, and release build checks pass.
-- Platform work includes named device/OS/app-version manual evidence.
-- Accessibility behavior is checked for any changed critical UI.
+Two levels, per [ADR-004](../decisions/0004-code-first-with-batched-device-evidence.md).
+
+**Implemented — merge allowed:**
+
+- Acceptance criteria that do not require a device pass, and focused automated tests pass.
+- Class A evidence is green: `make check`, or the equivalent CI job.
+- Class B evidence is green where an Apple toolchain is available; otherwise the `verification-debt` label is applied and the Apple-toolchain row is registered.
+- Every deferred row is registered in [DEFERRED_EVIDENCE.md](../verification/DEFERRED_EVIDENCE.md) with an owning issue and a gate.
 - Logs, crash context, notifications, and analytics contain no prohibited content.
 - Documentation/ADR is updated when a durable decision changes.
 - No out-of-scope backend, sync, AI, media, or additional-source abstraction is introduced.
 - The branch is reviewable, contains no secrets or signing material, and leaves the application buildable.
+
+**Verified — issue may close:**
+
+- Every registered row for the issue is cleared with sanitized evidence attached to the issue or pull request.
+- Platform work includes named device/OS/app-version manual evidence, gathered in a batched device session.
+- Accessibility behavior is checked for any changed critical UI.
+- No phase gate passes while rows for that phase are open.
 
 ## GitHub issue model
 

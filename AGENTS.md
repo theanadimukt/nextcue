@@ -19,21 +19,33 @@ Use `docs/discovery/` only for historical context and `docs/future/` only for de
 
 ## Implementation gate and commands
 
-A disposable Flutter iOS scaffold now supports the [ADR-003 share-capture spike](docs/decisions/0003-provisional-flutter-architecture.md); it is not a production scaffold. Flutter remains provisional until the spike passes on physical iOS and Android devices and the framework decision is recorded. Production screen development is blocked until then.
+A disposable Flutter iOS scaffold now supports the [ADR-003 share-capture spike](docs/decisions/0003-provisional-flutter-architecture.md); it is not a production scaffold. Flutter remains provisional until the spike passes on physical iOS and Android devices and the framework decision is recorded. Device access no longer blocks implementation: [ADR-004](docs/decisions/0004-code-first-with-batched-device-evidence.md) separates implementation from verification, so framework-independent code may be written, reviewed, and merged on automated evidence while device rows are deferred to a phase-gate session.
 
-Run provisional Phase 0 commands from the repository root:
+Run automated evidence from the repository root. This is the implementation gate, and it needs no Apple toolchain, simulator, or device:
 
 ```sh
-make lint
-flutter test
-(cd ios/SharePayloadKit && swift test)
-tool/check_ios_harness.sh
-flutter build ios --simulator
-flutter build ios --release --no-codesign
-flutter run --release
+make check
 ```
 
-The final command requires signed physical-device configuration. Replace these commands when Phase 0 establishes the production scaffold.
+`make check` runs `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, and `python3 tool/check_ios_harness.py`. CI runs the same commands on every push and pull request (`.github/workflows/ci.yml`).
+
+Apple-toolchain evidence needs macOS with Xcode, and CI runs it on a macOS runner for iOS-affecting changes:
+
+```sh
+make check-apple
+```
+
+Signed physical-device configuration is still required for the ADR-003 spike and for the device sessions. Replace these commands when Phase 0 establishes the production scaffold.
+
+## Evidence classes and deferred evidence
+
+Every task declares the evidence classes it needs:
+
+- **A** — automated, runs anywhere (Linux, CI): formatting, analysis, Dart and widget tests, configuration checks.
+- **B** — automated, needs an Apple toolchain: Swift tests, unsigned iOS build, extension embedding.
+- **C**, **D**, **E** — simulator, physical device, and accessibility evidence. Manual, batched at phase gates.
+
+Classes A and B are the implementation gate. Classes C, D, and E are the phase gate: register every deferral in [docs/verification/DEFERRED_EVIDENCE.md](docs/verification/DEFERRED_EVIDENCE.md) and clear them together with [docs/verification/DEVICE_SESSION.md](docs/verification/DEVICE_SESSION.md).
 
 ## Workflow
 
@@ -49,6 +61,11 @@ The final command requires signed physical-device configuration. Replace these c
 
 When creating or updating issues, follow the development plan's [GitHub issue model](docs/plan/V1_DEVELOPMENT_PLAN.md#github-issue-model) and the issue catalog's brief structure. Stories need a plain-language explanation of behavior and user value. Tasks must stand alone with an objective, implementation guidance, constraints/non-goals, task-specific Definition of Done, testable acceptance criteria, verification evidence, and blockers. Preserve acceptance criteria when rewriting a brief.
 
-A task is complete only when every acceptance criterion and verification step passes, relevant automated/build checks are green, and required platform, accessibility, and privacy evidence is attached to the issue or pull request. Apply the plan's [verification strategy](docs/plan/V1_DEVELOPMENT_PLAN.md#verification-strategy) and [Definition of Done](docs/plan/V1_DEVELOPMENT_PLAN.md#definition-of-done-for-every-leaf-task); one platform's evidence never proves the other.
+A task has two completion levels ([ADR-004](docs/decisions/0004-code-first-with-batched-device-evidence.md)):
+
+- **Implemented** — every non-device acceptance criterion passes and evidence classes `A` and `B` are green (`make check`, plus `make check-apple` or the macOS CI job where available). The change may merge, the issue stays open with the `verification-debt` label, and every deferred row is registered in [DEFERRED_EVIDENCE.md](docs/verification/DEFERRED_EVIDENCE.md).
+- **Verified** — every registered row for that issue is cleared with sanitized evidence attached to the issue or pull request. Only then does the issue close.
+
+Apply the plan's [verification strategy](docs/plan/V1_DEVELOPMENT_PLAN.md#verification-strategy) and [Definition of Done](docs/plan/V1_DEVELOPMENT_PLAN.md#definition-of-done-for-every-leaf-task); one platform's evidence never proves the other. Never describe deferred behavior as verified, and never clear a phase gate while rows for that phase are open.
 
 Parent/child links express scope; `Blocked by` expresses execution order. Close a parent only after all child acceptance criteria and its phase checkpoint pass.
