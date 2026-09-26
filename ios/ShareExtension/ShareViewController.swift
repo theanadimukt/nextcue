@@ -4,11 +4,13 @@ import UniformTypeIdentifiers
 final class ShareViewController: UIViewController {
   private static let appGroupIdentifier = "group.app.nextcue.share-spike"
   private static let evidenceKey = "lastShareEvidence"
+  private static let queueDirectoryName = "pending-handoffs"
   private static let maximumAttachmentCount = 4
 
   private let statusLabel = UILabel()
   private let doneButton = UIButton(type: .system)
   private var canCompleteRequest = false
+  private var hasFinishedInspection = false
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -54,9 +56,18 @@ final class ShareViewController: UIViewController {
 
     var candidates: [ShareEvidence] = []
     if let text = item.attributedContentText?.string, !text.isEmpty {
-      let evidence = PayloadInspector.inspect(text: text)
+      let receivedAt = Date()
+      let evidence = PayloadInspector.inspect(text: text, receivedAt: receivedAt)
       if evidence.representationSupported {
-        finishInspection(with: evidence)
+        finishInspection(
+          with: evidence,
+          envelope: try? SharedCaptureEnvelope(
+            receivedAt: receivedAt,
+            sourceHint: .text,
+            rawText: text,
+            candidateURLs: PayloadInspector.candidateHTTPURLs(in: text).map(\.absoluteString)
+          )
+        )
         return
       }
       candidates.append(evidence)
@@ -81,9 +92,18 @@ final class ShareViewController: UIViewController {
         let url = value as? URL ?? (value as? NSURL).map { $0 as URL }
         DispatchQueue.main.async {
           if let url {
-            let evidence = PayloadInspector.inspect(url: url)
+            let receivedAt = Date()
+            let evidence = PayloadInspector.inspect(url: url, receivedAt: receivedAt)
             if evidence.representationSupported {
-              self.finishInspection(with: evidence)
+              self.finishInspection(
+                with: evidence,
+                envelope: try? SharedCaptureEnvelope(
+                  receivedAt: receivedAt,
+                  sourceHint: .url,
+                  rawText: nil,
+                  candidateURLs: [url.absoluteString]
+                )
+              )
             } else {
               self.inspectText(
                 from: provider,
@@ -120,9 +140,18 @@ final class ShareViewController: UIViewController {
         let text = value as? String ?? (value as? NSString).map(String.init)
         DispatchQueue.main.async {
           if let text {
-            let evidence = PayloadInspector.inspect(text: text)
+            let receivedAt = Date()
+            let evidence = PayloadInspector.inspect(text: text, receivedAt: receivedAt)
             if evidence.representationSupported {
-              self.finishInspection(with: evidence)
+              self.finishInspection(
+                with: evidence,
+                envelope: try? SharedCaptureEnvelope(
+                  receivedAt: receivedAt,
+                  sourceHint: .text,
+                  rawText: text,
+                  candidateURLs: PayloadInspector.candidateHTTPURLs(in: text).map(\.absoluteString)
+                )
+              )
             } else {
               self.inspect(
                 providers: providers,
@@ -141,23 +170,39 @@ final class ShareViewController: UIViewController {
     inspect(providers: providers, at: index + 1, candidates: candidates)
   }
 
-  private func finishInspection(with evidence: ShareEvidence) {
-    guard let defaults = UserDefaults(suiteName: Self.appGroupIdentifier) else {
-      statusLabel.text = "Unable to access the shared App Group. No evidence was recorded."
-      doneButton.isEnabled = true
-      return
+  private func finishInspection(
+    with evidence: ShareEvidence,
+    envelope: SharedCaptureEnvelope? = nil
+  ) {
+    guard !hasFinishedInspection else { return }
+    hasFinishedInspection = true
+    UserDefaults(suiteName: Self.appGroupIdentifier)?.set(
+      evidence.propertyList,
+      forKey: Self.evidenceKey
+    )
+
+    if evidence.representationSupported {
+      guard let envelope,
+        let container = FileManager.default.containerURL(
+          forSecurityApplicationGroupIdentifier: Self.appGroupIdentifier
+        )
+      else {
+        statusLabel.text = "Unable to access shared storage. Nothing was saved."
+        doneButton.isEnabled = true
+        return
+      }
+      do {
+        try HandoffQueue(
+          directoryURL: container.appendingPathComponent(Self.queueDirectoryName)
+        ).enqueue(envelope)
+        canCompleteRequest = true
+        statusLabel.text = "Saved for import."
+      } catch {
+        statusLabel.text = "Unable to save shared content. Please try again."
+      }
+    } else {
+      statusLabel.text = "Unsupported share. No shared content was recorded."
     }
-    defaults.set(evidence.propertyList, forKey: Self.evidenceKey)
-    guard defaults.dictionary(forKey: Self.evidenceKey) != nil else {
-      statusLabel.text = "Unable to record sanitized evidence."
-      doneButton.isEnabled = true
-      return
-    }
-    canCompleteRequest = evidence.representationSupported
-    statusLabel.text =
-      evidence.representationSupported
-      ? "Supported text or URL representation received. Only structural evidence was recorded."
-      : "Unsupported share. No shared content was recorded."
     doneButton.isEnabled = true
   }
 
